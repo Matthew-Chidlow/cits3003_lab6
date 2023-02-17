@@ -148,6 +148,12 @@ glm::vec3 rotation_speed{1.0f};
 glm::vec3 scale_components{0.25f, 1.0f, 1.0f};
 glm::vec3 translation_vec{0.0f, 0.0f, 0.0f};
 
+// Perspective projection
+glm::mat4 projection = glm::perspective(glm::radians(80.0), 1.0, 0.1, 10.0);
+
+// Move the scene backwards relative to the camera
+glm::mat4 view = glm::translate(glm::vec3{0.0, 0.0, -1.5});
+
 void ui() {
     // Create an ImGUI window, the function returns true if the window is expanded and false if collapsed,
     // so we use an if to only add things to the window it is open
@@ -176,7 +182,8 @@ void ui() {
 }
 
 void draw_cube(glm::mat4 model) {
-    glUniformMatrix4fv( xyzw_multipliers_location, 1, GL_FALSE, &model[0][0] );
+    glm::mat4 pvm = projection * view * model;
+    glUniformMatrix4fv( xyzw_multipliers_location, 1, GL_FALSE, &pvm[0][0] );
     glDrawArrays( GL_TRIANGLES, 0, NUM_VERTICES );
 }
 
