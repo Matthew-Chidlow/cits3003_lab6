@@ -39,8 +39,9 @@ using uint = unsigned int;
 
 // Some constant window properties we define here for now, since we currently don't handle
 // window resizing.
-#define WINDOW_WIDTH 512
-#define WINDOW_HEIGHT 512
+int window_width = 512;
+int window_height = 512;
+
 #define WINDOW_TITLE "Lab 6"
 
 // A flag to enable or disable vsync (aka frame limiting)
@@ -148,11 +149,16 @@ glm::vec3 rotation_speed{1.0f};
 glm::vec3 scale_components{0.25f, 1.0f, 1.0f};
 glm::vec3 translation_vec{0.0f, 0.0f, 0.0f};
 
+float fov_degrees = 80.0f;
 // Perspective projection
-glm::mat4 projection = glm::perspective(glm::radians(80.0), 1.0, 0.1, 10.0);
+glm::mat4 projection = glm::perspective(glm::radians(fov_degrees), (float) window_width / (float) window_height, 0.1f, 10.0f);
 
 // Move the scene backwards relative to the camera
-glm::mat4 view = glm::translate(glm::vec3{0.0, 0.0, -1.5});
+glm::mat4 view = glm::translate(glm::vec3{0.0f, 0.0f, -1.5f});
+
+void update_projection() {
+    projection = glm::perspective(glm::radians(fov_degrees), (float) window_width / (float) window_height, 0.1f, 10.0f);
+}
 
 void ui() {
     // Create an ImGUI window, the function returns true if the window is expanded and false if collapsed,
@@ -175,6 +181,9 @@ void ui() {
         // Add a slider to edit the 3 components of the translation_vec vector, setting the rang to be [-1.0, 1.0]
         ImGui::SliderFloat3("Translation", &translation_vec[0], -1.0f, 1.0f);
 
+        if (ImGui::SliderFloat("Camera FOV", &fov_degrees, 0.0f, 180.0f)) {
+            update_projection();
+        }
     }
     // Since ImGUI is an immediate mode UI with hidden internal state, we need to explicitly tell it that
     // we are done talking about the current window, to do that we call End();
@@ -259,6 +268,13 @@ void key_callback(GLFWwindow *window, int key, int /*scancode*/, int /*action*/,
     }
 }
 
+void framebuffer_size_callback(GLFWwindow* /*window*/, int width, int height) {
+    window_width = width;
+    window_height = height;
+    glViewport(0, 0, window_width, window_height);
+    update_projection();
+}
+
 void refresh_callback(GLFWwindow *window) {
     auto* imgui_manager = static_cast<ImGuiManager *>(glfwGetWindowUserPointer(window));
     draw(window, *imgui_manager);
@@ -281,9 +297,9 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif // __APPLE__
     glfwWindowHint(GLFW_DEPTH_BITS, 24);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-    GLFWwindow *window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE, nullptr, nullptr);
+    GLFWwindow *window = glfwCreateWindow(window_width, window_height, WINDOW_TITLE, nullptr, nullptr);
     glfwMakeContextCurrent(window);
 
 
@@ -307,6 +323,7 @@ int main() {
     // the same glfw callbacks and chain call the ones previous set.
     // We could do the same if we set out callbacks afterwards, but this is less work.
     glfwSetKeyCallback(window, key_callback);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     ImGuiManager imgui_manager{window};
 
