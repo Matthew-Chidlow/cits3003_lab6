@@ -114,9 +114,6 @@ void init() {
     glGenBuffers(1, &vertex_buffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
 
-    // First, we create an empty buffer of the size we need by passing
-    //   a NULL pointer for the data values
-
     // Since the data is laid out contiguously already,
     // can just directly upload instead of needing to do it in two steps
     glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * NUM_VERTICES, vertices, GL_STATIC_DRAW);
