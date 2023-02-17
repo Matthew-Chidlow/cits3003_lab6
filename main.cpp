@@ -50,7 +50,8 @@ int window_height = 512;
 
 const int NUM_SIDES = 6;
 const int NUM_TRIANGLES = 2 * NUM_SIDES;
-const int NUM_VERTICES = 3 * NUM_TRIANGLES;
+const int NUM_ELEMENTS = 3 * NUM_TRIANGLES;
+const int NUM_VERTICES = 8;
 
 // This time create a struct representing the data of a single vertex, because we will be
 // interleaving the vertex attributes instead of laying it out with each attribute together like before.
@@ -60,47 +61,37 @@ struct Vertex {
 };
 
 Vertex vertices[NUM_VERTICES] = {
-        Vertex{glm::vec3(-0.5, -0.5, 0.5), glm::vec3(1.0, 0.0, 0.0)},
-        Vertex{glm::vec3(0.5, -0.5, 0.5), glm::vec3(0.0, 0.0, 1.0)},
-        Vertex{glm::vec3(-0.5, 0.5, 0.5), glm::vec3(0.0, 1.0, 0.0)},
-        Vertex{glm::vec3(0.5, 0.5, 0.5), glm::vec3(0.0, 1.0, 1.0)},
-        Vertex{glm::vec3(-0.5, 0.5, 0.5), glm::vec3(0.0, 1.0, 0.0)},
-        Vertex{glm::vec3(0.5, -0.5, 0.5), glm::vec3(0.0, 0.0, 1.0)},
+        Vertex{glm::vec3{-0.5, -0.5, -0.5}, glm::vec3{0.0, 0.0, 0.0}},
+        Vertex{glm::vec3{-0.5, -0.5, 0.5}, glm::vec3{0.0, 0.0, 1.0}},
+        Vertex{glm::vec3{-0.5, 0.5, -0.5}, glm::vec3{0.0, 1.0, 0.0}},
+        Vertex{glm::vec3{-0.5, 0.5, 0.5}, glm::vec3{0.0, 1.0, 1.0}},
 
-        Vertex{glm::vec3(-0.5, -0.5, -0.5), glm::vec3(1.0, 0.0, 0.0)},
-        Vertex{glm::vec3(0.5, -0.5, -0.5), glm::vec3(0.0, 0.0, 1.0)},
-        Vertex{glm::vec3(-0.5, 0.5, -0.5), glm::vec3(0.0, 1.0, 0.0)},
-        Vertex{glm::vec3(0.5, 0.5, -0.5), glm::vec3(0.0, 1.0, 1.0)},
-        Vertex{glm::vec3(-0.5, 0.5, -0.5), glm::vec3(0.0, 1.0, 0.0)},
-        Vertex{glm::vec3(0.5, -0.5, -0.5), glm::vec3(0.0, 0.0, 1.0)},
+        Vertex{glm::vec3{0.5, -0.5, -0.5}, glm::vec3{1.0, 0.0, 0.0}},
+        Vertex{glm::vec3{0.5, -0.5, 0.5}, glm::vec3{1.0, 0.0, 1.0}},
+        Vertex{glm::vec3{0.5, 0.5, -0.5}, glm::vec3{1.0, 1.0, 0.0}},
+        Vertex{glm::vec3{0.5, 0.5, 0.5}, glm::vec3{1.0, 1.0, 1.0}}
+};
 
-        Vertex{glm::vec3(0.5, -0.5, -0.5), glm::vec3(1.0, 0.0, 0.0)},
-        Vertex{glm::vec3(0.5, 0.5, -0.5), glm::vec3(0.0, 0.0, 1.0)},
-        Vertex{glm::vec3(0.5, -0.5, 0.5), glm::vec3(0.0, 1.0, 0.0)},
-        Vertex{glm::vec3(0.5, 0.5, 0.5), glm::vec3(0.0, 1.0, 1.0)},
-        Vertex{glm::vec3(0.5, -0.5, 0.5), glm::vec3(0.0, 1.0, 0.0)},
-        Vertex{glm::vec3(0.5, 0.5, -0.5), glm::vec3(0.0, 0.0, 1.0)},
+// The following builds triangles from the 8 vertices above,
+// using numbers 0-7 to refer to the element positions in the array
+uint elements[NUM_ELEMENTS] = {
+        1, 5, 3,
+        7, 3, 5,
 
-        Vertex{glm::vec3(-0.5, -0.5, -0.5), glm::vec3(1.0, 0.0, 0.0)},
-        Vertex{glm::vec3(-0.5, 0.5, -0.5), glm::vec3(0.0, 0.0, 1.0)},
-        Vertex{glm::vec3(-0.5, -0.5, 0.5), glm::vec3(0.0, 1.0, 0.0)},
-        Vertex{glm::vec3(-0.5, 0.5, 0.5), glm::vec3(0.0, 1.0, 1.0)},
-        Vertex{glm::vec3(-0.5, -0.5, 0.5), glm::vec3(0.0, 1.0, 0.0)},
-        Vertex{glm::vec3(-0.5, 0.5, -0.5), glm::vec3(0.0, 0.0, 1.0)},
+        0, 4, 2,
+        6, 2, 4,
 
-        Vertex{glm::vec3(-0.5, 0.5, -0.5), glm::vec3(1.0, 0.0, 0.0)},
-        Vertex{glm::vec3(-0.5, 0.5, 0.5), glm::vec3(0.0, 0.0, 1.0)},
-        Vertex{glm::vec3(0.5, 0.5, -0.5), glm::vec3(0.0, 1.0, 0.0)},
-        Vertex{glm::vec3(0.5, 0.5, 0.5), glm::vec3(0.0, 1.0, 1.0)},
-        Vertex{glm::vec3(0.5, 0.5, -0.5), glm::vec3(0.0, 1.0, 0.0)},
-        Vertex{glm::vec3(-0.5, 0.5, 0.5), glm::vec3(0.0, 0.0, 1.0)},
+        4, 6, 5,
+        7, 5, 6,
 
-        Vertex{glm::vec3(-0.5, -0.5, -0.5), glm::vec3(1.0, 0.0, 0.0)},
-        Vertex{glm::vec3(-0.5, -0.5, 0.5), glm::vec3(0.0, 0.0, 1.0)},
-        Vertex{glm::vec3(0.5, -0.5, -0.5), glm::vec3(0.0, 1.0, 0.0)},
-        Vertex{glm::vec3(0.5, -0.5, 0.5), glm::vec3(0.0, 1.0, 1.0)},
-        Vertex{glm::vec3(0.5, -0.5, -0.5), glm::vec3(0.0, 1.0, 0.0)},
-        Vertex{glm::vec3(-0.5, -0.5, 0.5), glm::vec3(0.0, 0.0, 1.0)}
+        0, 2, 1,
+        3, 1, 2,
+
+        2, 3, 6,
+        7, 6, 3,
+
+        0, 1, 4,
+        5, 4, 1
 };
 
 int xyzw_multipliers_location;
@@ -119,6 +110,12 @@ void init() {
     // Since the data is laid out contiguously already,
     // can just directly upload instead of needing to do it in two steps
     glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * NUM_VERTICES, vertices, GL_STATIC_DRAW);
+
+    // ADDED: load the element index data
+    uint element_buffer;
+    glGenBuffers(1, &element_buffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint) * NUM_ELEMENTS, elements, GL_STATIC_DRAW);
 
     // Load shaders and use the resulting shader program
     uint program = ShaderHelper::load_shader("vert.glsl", "frag.glsl");
@@ -152,7 +149,8 @@ glm::vec3 translation_vec{0.0f, 0.0f, 0.0f};
 
 float fov_degrees = 80.0f;
 // Perspective projection
-glm::mat4 projection = glm::perspective(glm::radians(fov_degrees), (float) window_width / (float) window_height, 0.1f, 10.0f);
+glm::mat4 projection = glm::perspective(glm::radians(fov_degrees), (float) window_width / (float) window_height, 0.1f,
+                                        10.0f);
 
 glm::vec3 camera_pos{0.0f, 0.0f, 1.5f};
 // Move the scene backwards relative to the camera
@@ -198,13 +196,13 @@ void ui() {
 
 void draw_cube(glm::mat4 model) {
     glm::mat4 pvm = projection * view * model;
-    glUniformMatrix4fv( xyzw_multipliers_location, 1, GL_FALSE, &pvm[0][0] );
-    glDrawArrays( GL_TRIANGLES, 0, NUM_VERTICES );
+    glUniformMatrix4fv(xyzw_multipliers_location, 1, GL_FALSE, &pvm[0][0]);
+    glDrawElements(GL_TRIANGLES, NUM_ELEMENTS, GL_UNSIGNED_INT, nullptr);
 }
 
 std::deque<float> frame_times{};
 
-void draw(GLFWwindow *window, ImGuiManager& imgui_manager) {
+void draw(GLFWwindow *window, ImGuiManager &imgui_manager) {
     // Tell ImGUI we are starting a new frame
     imgui_manager.new_frame();
     ImGuiManager::enable_main_window_docking();
@@ -250,12 +248,14 @@ void draw(GLFWwindow *window, ImGuiManager& imgui_manager) {
     }
     {
         // Bottom Left (c)
-        draw_cube(glm::translate(glm::vec3{-0.5, -0.5, 0}) * glm::scale(glm::vec3{0.3}) * rotation * translation * scale);
+        draw_cube(
+                glm::translate(glm::vec3{-0.5, -0.5, 0}) * glm::scale(glm::vec3{0.3}) * rotation * translation * scale);
         draw_cube(glm::translate(glm::vec3{-0.5, -0.5, 0}) * glm::scale(glm::vec3{0.3}) * rotation * scale);
     }
     {
         // Bottom Right (d)
-        draw_cube(glm::translate(glm::vec3{0.5, -0.5, 0}) * glm::scale(glm::vec3{0.3}) * translation * rotation * scale);
+        draw_cube(
+                glm::translate(glm::vec3{0.5, -0.5, 0}) * glm::scale(glm::vec3{0.3}) * translation * rotation * scale);
         draw_cube(glm::translate(glm::vec3{0.5, -0.5, 0}) * glm::scale(glm::vec3{0.3}) * rotation * scale);
     }
 
@@ -291,18 +291,18 @@ void key_callback(GLFWwindow *window, int key, int /*scancode*/, int /*action*/,
     }
 }
 
-void framebuffer_size_callback(GLFWwindow* /*window*/, int width, int height) {
+void framebuffer_size_callback(GLFWwindow * /*window*/, int width, int height) {
     window_width = width;
     window_height = height;
     glViewport(0, 0, window_width, window_height);
     update_projection();
 }
 
-void cursor_pos_callback(GLFWwindow* window, double x_pos, double y_pos) {
+void cursor_pos_callback(GLFWwindow *window, double x_pos, double y_pos) {
     static glm::vec2 last_pos = glm::vec2{x_pos, y_pos};
     glm::vec2 pos = glm::vec2{x_pos, y_pos};
 
-    if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && !ImGuiManager::want_capture_mouse()) {
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && !ImGuiManager::want_capture_mouse()) {
         auto delta = pos - last_pos;
         camera_pos.x -= 2.0f * delta.x / (float) window_width;
         camera_pos.y += 2.0f * delta.y / (float) window_height;
@@ -313,7 +313,7 @@ void cursor_pos_callback(GLFWwindow* window, double x_pos, double y_pos) {
 }
 
 void refresh_callback(GLFWwindow *window) {
-    auto* imgui_manager = static_cast<ImGuiManager *>(glfwGetWindowUserPointer(window));
+    auto *imgui_manager = static_cast<ImGuiManager *>(glfwGetWindowUserPointer(window));
     draw(window, *imgui_manager);
 }
 
