@@ -1,0 +1,562 @@
+<div class="leftcol" id="content_div_366447">
+
+    <h3>GLFW, glad, ImGui & glm (4D Transformations, Callbacks and Meshes)</h3>
+    This lab will be mostly identical to the last, however GLUT, GLEW and Angel have been replaced with more modern
+    libraries.
+    <br>
+    Also, the setup for this lab will reflect the setup for the project, so consider it practice for that.
+
+    <h4>Objectives:</h4>
+    In this lab's exercises, you will learn how to:<br>
+    <ul>
+        <li> Extend 3D transformation matrices to 4D which allows <em>translations</em>, which are
+            transformations that directly change the location of the origin, and hence also all vertices that are
+            drawn relative to it.
+        </li>
+        <li> Use library functions from <code>glm</code> for standard transformations: rotation, scaling, translation
+            and
+            perspective transformation.
+        </li>
+        <li> Set simple resize, mouse callback functions.
+        </li>
+        <li> Share vertex data between triangles by drawing using <code>glDrawElements</code> and
+            set up multiple vertex array objects so that many objects can be drawn.
+
+            <!--        <li> Load and draw vertices and triangles from a file containing a 3D <em>mesh</em> using the
+                         <a href="https://assimp.sourceforge.net">Open Asset Import Library</a>.
+            -->
+
+        </li>
+    </ul>
+    <hr>
+
+    <p>You should try to complete this lab during the lab session. If you lag behind, try to complete it in your own
+        time. <br></p>
+    <p>
+
+
+    </p>
+    <ol style="list-style-type:upper-alpha">
+        <li><h3 class="underline">Getting started</h3>
+            <ol>
+                <li> Go to the <a href="https://github.com/Matthew-Chidlow/cits3003_lab6.git">GitHub Page</a> and follow
+                    the instructions of the README.md
+
+                </li>
+                <li> Copy, rename and modify the C++ code and vertex and fragment shaders as you need them
+                    in what follows.
+
+                    <!--
+                              <li> Check <a href="https://secure.csse.uwa.edu.au/run/<?=$help?>">help3003</a> for hints and
+                                   post questions there. -->
+
+                </li>
+            </ol>
+            <br>
+            <p>
+            </p></li>
+    </ol>
+    <ol>
+
+        <li><h3 class="underline">Q1: Translations via 4D matrices </h3>
+            In lab 4 you shouldn't have needed to change the vertex shader at all (nor the fragment shader). Being able
+            to
+            pass a 3D matrix to the shader allows us to do many geometric transformations, including all possible
+            rotations and scaling.
+
+            However, it doesn't allow us to move objects to a different place - no matter what 3 by 3
+            matrix <code>M</code> we choose, we have <br>
+            &nbsp;&nbsp;&nbsp; <code>M <b>O</b> = <b>O</b></code> <br>
+            where <code><b>O</b> = (0,0,0)<sup>T</sup></code> is the origin.
+            That is, matrix M times the origin gives the origin. There is
+            no translation in all the code that we have written so far.<br>
+            <p>
+
+                To allow objects to move, or be <em>translated</em>, we could modify our vertex shader to separately
+                take in
+                a <code>vec3 moveTo</code> which it adds to the coordinates of each vertex to move the
+                origin to the designated position. But, this wouldn't allow us to combine these translations within a
+                sequence of rotation and scaling transformations. <br></p>
+            <p>
+
+                A better way is to add a fourth dimension to every vertex position that is always just the
+                constant 1.0. Then, in our matrices the entries in the fourth column (dx, dy, dz, 1) are
+                multiplied by 1.0, so they are added to the coordinates of every vertex, causing a
+                translation that moves the origin to the position (dx, dy, dz). The 1 at the bottom of the
+                fourth column ensures that the result of any matrix multiplication also has a 1 in the
+                fourth position.<br></p>
+            <p>
+
+                This results in <em>4D Homogeneous Coordinates</em> which are central to OpenGL and other
+                similar graphics APIs.
+
+            </p>
+            <ol style="list-style-type:lower-alpha">
+
+                <li>
+                    <ol>
+                        <li> Edit the current vertex shader (located in <code>res/shaders</code>), and generalise it so
+                            that it takes in
+                            a 4D matrix instead of 3D, and simply multiplies them to produce the
+                            output position, using w=1 for the 4D position: <br>
+                            <p>
+
+                            </p><pre><code>gl_Position = xyzwMultipliers * vec4(vPosition, 1.0f);</code></pre>
+                            <p>
+
+                            </p></li>
+                        <li> Similarly, edit the C++ code, passing a 4D matrix via <code>glUniformMatrix4fv</code>.
+                            <br>Remembering that when you change the name of a uniform variable you need to change the
+                            code that looks for its location.
+                            <br>
+                            <br>
+
+                        </li>
+                        <li> Instead of manually constructing matrices our selves for the display function as in
+                            previous labs,
+                            we'll use functions from the <code>glm</code> library that produce 4D matrices that we
+                            can multiply together. <br>
+                            <p>
+
+                                Replace the previous 3D matrices by using the following functions:<br></p>
+                            <p>
+
+                            </p><code>glm::rotate(angle, axis);</code> Which takes an angle in radians and a <code>glm::vec3</code>
+                            axis to rotate about e.g <br>
+                            <pre><code>glm::mat4 x_rotation = glm::rotate(rotation_angles.x, glm::vec3{1.0f, 0.0f,0.0f});</code></pre><br>
+                            Also use for the y and z rotation axis.<br>
+                            <p></p>
+                            <p>
+
+                            </p><code>glm::scale(scale);</code> Which takes a <code>glm::vec3</code> which contains the scale in x, y & z.
+                            <br>
+                            Also create a new global <code>glm::vec3</code> variable to store this scale in, and update
+                            the ImGUI in the <code>ui()</code> method to allow you to edit this scale.<br>
+                            <p>
+
+
+                            </p>
+                            Then use all 4 of those <code>glm::mat4</code> matrices to compose the combined_matrix
+                            <p>
+
+                            </p></li>
+                        <li> Build and run this program, and verify that it does more or less the same as before,<br>
+                            i.e, the same as the right-hand part of the video below.
+                        </li>
+                    </ol>
+                    <br>
+                    <p>
+
+                        <video controls loop autoplay width="600">
+                            <source src="videos/q1_a.webm" type="video/webm">
+                        </video>
+
+
+                    </p>
+                </li>
+                <li>
+                    <ol>
+                        <li> Now, replace the scaling with <code>glm::translate(glm::vec3{0.6f, 0.6f, 0.6f})</code>. What
+                            difference does this make? (Warning: part of the cube will go outside the viewing
+                            volume, causing an apparent "hole" in place of one corner - remember this because it's
+                            likely
+                            you'll encounter similar in the future.) <br>
+                            <p>
+
+                                Then like you did with scale, create a new global <code>glm::vec3</code> variable to
+                                store this translation in,
+                                and update the ImGUI in the <code>ui()</code> method to allow you to edit this translation in a reasonable way.<br>
+                            <p>
+
+                            </p></li>
+                        <li>Rather than
+                            create different versions and then experiment to
+                            see what happens when we move the translation to before or after each of the
+                            transformations,
+                            we can use scaling and translation to display four things in different parts of the window.
+                            <br>
+                            <p>
+                                If R is the rotation part, T is translation and S is scale, we can
+                                compare (a) the original (without the translation) (R * S) with three versions (b)
+                                with the translation last (R * S * T), (c) between the rotations and scale (R * T * S)
+                                (d) to the left of both rotations and scale (T * R * S). <br></p>
+                            <p>
+
+                                Do this comparison by dividing the screen into four parts (top-left, top-right,
+                                bottom-left, bottom-right), and in each part one draw of these four. To do this you'll
+                                need to start the multiplication with, e.g, <br></p>
+                            <p>
+                                <pre><code>glm::translate(glm::vec3{0.5f, 0.5f, 0.0f}) * glm::scale(glm::vec3{0.3f}) * ...</code></pre>
+                                <br></p>
+                            <p>
+                                to scale all dimensions down by <code>0.3</code> and then move the origin to
+                                the centre of one of the four parts, <code>(0.5, 0.5, 0.0)</code> in this case. <br></p>
+                            <p>
+
+                                In each of the four parts also draw the rotated cube with no translation, to help
+                                compare the effects of the translations.<br></p>
+                            <p>
+
+                                Rather than repeat the code that draws the cube, use the following function that
+                                takes in a 4 by 4 matrix, sets it, and then draws a cube. <br></p>
+                            <p>
+                            </p>
+                            <pre><code>void draw_cube(glm::mat4 model) {
+    glUniformMatrix4fv( xyzw_multipliers_location, 1, GL_FALSE, &model[0][0] );
+    glDrawArrays( GL_TRIANGLES, 0, NUM_VERTICES );
+}</code></pre>
+                            <p>
+
+                                Here the matrix transforms from <em>object coordinates</em> (relative to the objects
+                                own origin and axes) to <em>world coordinates</em> (the coordinates used to describe
+                                positions in the world). Such a matrix is called a <em>model matrix</em>.
+
+                            </p></li>
+                        <li> Build and run your program and compare to the following video. <br>
+                            <p>
+                            </p></li>
+                    </ol>
+
+                    <video controls loop autoplay width="600">
+                        <source src="videos/q1_b.webm" type="video/webm">
+                    </video>
+
+                </li>
+            </ol>
+            <br>
+            <p>
+
+            </p></li>
+        <li><h3 class="underline">Q2: Perspective transformation </h3>
+            The <code>glm</code> library also includes functions for creating 4D matrices
+            that perform perspective transformations. This function has the form: <br>
+            <p>
+            </p>
+            <pre><code>glm::mat4 glm::frustum(left, right, bottom, top, nearVal, farVal)</code></pre>
+            <br>
+            <p>
+
+                Here the camera is at the origin, and <code>left, right, bottom, top</code> give the
+                coordinates of a rectangle <code>near</code> units in front of the camera, with rays from
+                the camera projecting onto this rectangle following the synthetic camera
+                model. <code>far</code> determines the largest distance in front of the camera included
+                in the viewing volume. <br></p>
+            <p>
+
+                Together the parameters describe a pyramid with it's "point" at the origin (where the
+                camera is), but with the point cut off - a shape
+                properly called a <em>frustum</em>. Generally <code>near</code> and <code>far</code>
+                should be positive, with <code>near &lt; far</code> and <code>left &lt; right</code>,
+                and <code>bottom &lt; top</code>. <br></p>
+            <p>
+
+                See the following figure
+                [from the <a href="https://www.cs.unm.edu/~angel/BOOK/INTERACTIVE_COMPUTER_GRAPHICS/SIXTH_EDITION/">
+                recommended text</a> ]:
+                <br></p>
+            <p>
+
+                <img src="videos/an04f36.jpg" width="476" height="235"> <br></p>
+            <p>
+
+                The camera is at the origin, and most commonly <code>left = -right</code> and
+                <code>bottom = -top</code>. <br></p>
+            <p>
+
+                Note that there is another method for perspective projection: <code>glm::mat4 glm::perspective(float
+                fovy, float aspect, float zNear, float zFar)</code><br>
+                Which takes the vertical field of view (the angle between top and bottom faces of frustum),
+                and the aspect ratio of the front and back planes (aspect ratio = width/height).<br>
+                This will always create a geometrically symmetric matrix where the above conditions hold.
+            <p>
+
+
+            <p>
+                Projection matrices are designed so that multiplying coordinates by the matrix
+                will map points within the specified frustum to corresponding points in the
+                standard OpenGL viewing volume (i.e, -1 to 1 in the x, y and z directions) after perspective division.
+                Thus, it's
+                common to have projection matrices as the last matrix in a multiplication, i.e., the leftmost one.
+                We say that this matrix converts from <em>camera coordinates</em> (position relative to the
+                camera) to <em>normalized device coordinates</em> (with x and y locations corresponding 2D
+                window locations in the range -1 to 1) after perspective division which are closely related to <em>window
+                coordinates</em> (with x and y locations in pixels). Such a conversion is called
+                a <em>projection transformation</em>, and often it is kept in a special variable because it
+                only changes when the basic properties of the camera change, such as when the window is
+                reshaped. <br></p>
+            <p>
+
+                Note that viewing using <code>glm::frustum</code> or <code>glm::perspective</code> generally requires
+                that the objects are in front of the
+                camera, and often this means a translation is required to move the camera backwards
+                relative to the rest of the "world" (or move the world further along the negative z-axis). More
+                generally, we say that there is a conversion from
+                <em>world</em> coordinates (the ones we use when placing objects in our scene) to
+                <em>camera coordinates</em> (relative to the camera), and call this the <em>view transformation</em>
+                generally represented by a <em>view matrix</em>.
+
+                <br></p>
+            <p>
+
+
+            </p>
+            <ol>
+                <li> Add the following global variables near the top of the C++ code: <br>
+                    <p>
+                    </p>
+                    <pre><code>// Perspective projection
+glm::mat4 projection = glm::perspective(glm::radians(80.0f), 1.0f, 0.1f, 10.0f);
+
+// Move the scene backwards relative to the camera
+glm::mat4 view = glm::translate(glm::vec3{0.0f, 0.0f, -1.5f});</code></pre>
+                    <br>
+                    <p>
+
+                    </p></li>
+                <li> Create a local variable in <code>draw_cube()</code> called <code>pvm</code> (projection view model) which 
+					is a matrix equal to <code>projection * view * model</code>. Pass this variable to the shader instead of <code>model</code>.
+                    <p>
+                    </p></li>
+                <li> Build and run the program, and compare with the video below.
+
+                </li>
+            </ol>
+            <br>
+            <p>
+                <video controls loop autoplay width="600">
+                    <source src="videos/q2.webm" type="video/webm">
+                </video>
+
+            </p>
+        </li>
+        <li><h3 class="underline">Q3: Resize and mouse callbacks and FPS counter </h3>
+
+            <ol style="list-style-type:lower-alpha">
+                <li>
+                    <ol>
+                        <li>Replace WINDOW_WIDTH & WINDOW_HEIGHT defines with global variables <code>int
+                            window_width</code> and <code>int window_height</code>,
+                            initialise with the same values and use <a
+                                    href="https://www.glfw.org/docs/latest/group__window.html#gab3fb7c3366577daef18c0023e2a8591f">
+                                <code>glfwSetFramebufferSizeCallback</code></a> to register a callback function that
+                            updates these
+                            variables.
+                            <br>
+                            Make sure to update the line <code>glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);</code> so
+                            that the window can be resized, and update the definition for <code>window</code> in <code>main()</code> to use the new variables.
+                            <p><br>
+
+                            </p></li>
+                        <li>This callback should also resize the <em>viewport</em> (the part of the window where
+                            drawing occurs) via: <br>
+                            <p>
+                            </p>
+                            <pre><code>glViewport(0, 0, window_width, window_height);</code></pre>
+                            <br>
+                            <p>
+
+                            </p></li>
+                        <li>Additionally, have the callback put a new projection matrix in
+                            the <code>projection</code> global variable each time the window is resized. The new
+                            matrix should ensure that no "stretching" happens when the window isn't square -
+                            by calculating the aspect ratio you pass into
+                            <code>glm::perspective</code>. <br>
+
+                            </li>
+                        <li>Then add a control to ImGUI to allow you to control the field of view of the perspective
+                            projection. Use the
+                            fact that most ImGUI functions return a bool that tells you if the value has changed to not
+                            have to calculate the matrix every frame.
+							For example, <code>ImGui::DragFloat3("Rotation Speeds", &rotation_speed[0], 0.1f)</code> returns true if the value of 
+							any <code>rotation_speed</code> component has changed via the UI since it was last called.
+                        </li>
+
+
+                    </ol>
+
+                    <video controls loop autoplay width="600">
+                        <source src="videos/q3_a.webm" type="video/webm">
+                    </video>
+                    <br>
+                    <br>
+
+
+                </li>
+                <li> Use <a
+                        href="https://www.glfw.org/docs/latest/group__input.html#gac1f879ab7435d54d4d79bb469fe225d7">
+                    <code>glfwSetCursorPosCallback</code></a> to add a callback for when the mouse is moved.
+                    In this callback use <a
+                            href="https://www.glfw.org/docs/latest/group__input.html#gac1473feacb5996c01a7a5a33b5066704">glfwGetMouseButton</a>
+                    to check if the left mouse button is down. Also use <code>ImGuiManager::want_capture_mouse()</code>
+                    to check if ImGUI is trying to capture
+                    the mouse, because if so you should ignore the input.
+                    <br>
+                    If the left mouse is down and ImGUI isn't capturing it, use the mouse position from previous calls
+                    to the callback (stored in a static variable or a new global variable) to calculate a change in mouse
+                    position (a delta). Then this can be used to update the x and y components of a global
+                    camera_position variable, and then used to recalculate the view
+                    matrix.
+                    <br>
+                    Optionally you may also wish to be able to control the camera position from ImGUI, but if you do it
+                    won't be anything new.
+                    <br>
+                    <video controls loop autoplay width="600">
+                        <source src="videos/q3_b.webm" type="video/webm">
+                    </video>
+                </li>
+                <li> Create a global <a href="https://en.cppreference.com/w/cpp/container/deque">
+                    <code>std::deque&ltfloat&gt frame_times{};</code></a> to hold the last 100 frame times, then at the
+                    end of the <code>draw()</code> function push delta onto the back of the queue, and if queue exceeds
+                    the size limit, pop from the front. At the top of the file you'll need to include deque: <code>#include
+                        &ltdeque&gt</code><br>
+                    <pre><code>frame_times.push_back(delta);
+while (frame_times.size() > 100) {
+    frame_times.pop_front();
+}</code></pre>
+                    Then after that you'll need to iterate over the frame times stored in the queue and calculate the
+                    average frame time, with which you can calculate an average FPS and use <a
+                            href="https://www.glfw.org/docs/latest/group__window.html#ga5d877f09e968cef7a360b513306f17ff">glfwSetWindowTitle</a>
+                    to write the fps into the window title.
+                    <pre><code>float sum = 0.0f;
+for (const auto &dt: frame_times) {
+    sum += dt;
+}
+float average_dt = sum / (float) frame_times.size();
+float average_fps = 1.0f / average_dt;
+
+std::string title = "Lab 6: FPS: " + std::to_string(average_fps);
+glfwSetWindowTitle(window, title.c_str());</code></pre>
+                        <br>
+                        <video controls loop autoplay width="600">
+                            <source src="videos/q3_c.webm" type="video/webm">
+                        </video>
+                </li>
+            </ol>
+
+        </li>
+        <li><h3 class="underline">Q4: Sharing vertex data via glDrawElements
+            <!--and multiple vertex array objects--> </h3>
+
+            While <code>glDrawArrays</code> is the simplest way to draw in OpenGL, it isn't the most
+            efficient because it generally requires the coordinates of a vertex to be repeated each time it
+            appears in a triangle, which can be up to 6 times even with our simple cube. <br>
+            <p><br>
+
+                To avoid this inefficiency, most complex 3D objects are stored as an array of vertices
+                followed by an array of triangles with each triangle consisting of three integers that each
+                specify the vertex by giving an integer index to refer to an element in the array of vertices.<br></p>
+            <p>
+
+                OpenGL supports drawing objects in this format via the
+                function <a href="https://www.opengl.org/sdk/docs/man3/xhtml/glDrawElements.xml">
+                <code>glDrawElements</code></a>. <br></p>
+            <p>
+
+                Create a copy of <code>main.cpp</code> and rename it to preserve the work done in previous questions, 
+				then modify <code>main.cpp</code> as follows so that it uses
+                <a href="https://www.opengl.org/sdk/docs/man3/xhtml/glDrawElements.xml"><code>glDrawElements</code></a>
+                instead of <code>glDrawArrays</code>.
+
+            </p>
+            <ol>
+                <li> Put the following code in place of the previous definitions
+                    of <code>vertices</code>, <code>NUM_x</code>, etc.: <br>
+                    <p>
+
+                    </p>
+                    <pre><code>const int NUM_SIDES = 6;
+const int NUM_TRIANGLES = 2 * NUM_SIDES;
+const int NUM_ELEMENTS = 3 * NUM_TRIANGLES;
+const int NUM_VERTICES = 8;
+
+// This time create a struct representing the data of a single vertex, because we will be
+// interleaving the vertex attributes instead of laying it out with each attribute
+// together like before.
+struct Vertex {
+    glm::vec3 position;
+    glm::vec3 colour;
+};
+
+
+Vertex vertices[NUM_VERTICES] = {
+        Vertex { glm::vec3{ -0.5, -0.5, -0.5 }, glm::vec3{0.0, 0.0, 0.0} },
+        Vertex { glm::vec3{ -0.5, -0.5,  0.5 }, glm::vec3{0.0, 0.0, 1.0} },
+        Vertex { glm::vec3{ -0.5,  0.5, -0.5 }, glm::vec3{0.0, 1.0, 0.0} },
+        Vertex { glm::vec3{ -0.5,  0.5,  0.5 }, glm::vec3{0.0, 1.0, 1.0} },
+
+        Vertex { glm::vec3{  0.5, -0.5, -0.5 }, glm::vec3{1.0, 0.0, 0.0} },
+        Vertex { glm::vec3{  0.5, -0.5,  0.5 }, glm::vec3{1.0, 0.0, 1.0} },
+        Vertex { glm::vec3{  0.5,  0.5, -0.5 }, glm::vec3{1.0, 1.0, 0.0} },
+        Vertex { glm::vec3{  0.5,  0.5,  0.5 }, glm::vec3{1.0, 1.0, 1.0} }
+};
+
+// The following builds triangles from the 8 vertices above,
+// using numbers 0-7 to refer to the element positions in the array
+uint elements[NUM_ELEMENTS] = {
+        1, 5, 3,
+        7, 3, 5,
+
+        0, 4, 2,
+        6, 2, 4,
+
+        4, 6, 5,
+        7, 5, 6,
+
+        0, 2, 1,
+        3, 1, 2,
+
+        2, 3, 6,
+        7, 6, 3,
+
+        0, 1, 4,
+        5, 4, 1
+};
+</code></pre>
+                    <br>
+                    <p>
+
+                        Add the following after the call to <code>glBufferData</code>: <br></p>
+                    <p>
+
+                    </p>
+                    <pre><code>// ADDED: load the element index data
+uint element_buffer;
+glGenBuffers(1, &element_buffer);
+glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer);
+glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint) * NUM_ELEMENTS, elements, GL_STATIC_DRAW);
+</code></pre>
+                    <br>
+                    <p>
+
+                        Replace the call to <code>glDrawArrays</code> with: <br></p>
+                    <p>
+
+                    </p>
+                    <pre><code>glDrawElements( GL_TRIANGLES, NUM_ELEMENTS, GL_UNSIGNED_INT, nullptr);</code></pre>
+                    <br>
+                    <p>
+
+                        Build and run your program - it should do the same thing, aside from the colours being
+                        different.
+                        <br></p>
+                    <p>
+
+                        It may seem that these changes haven't achieved much, but for the project we'll be loading
+                        large arrays of vertex and triangle data for models, which greatly benefit from using elements/indices
+                        when drawing the models. <br></p>
+                    <p>
+
+                        <video controls loop autoplay width="600">
+                            <source src="videos/q4.webm" type="video/webm">
+                        </video>
+                    </p>
+                </li>
+            </ol>
+        </li>
+    </ol>
+
+    <h3 class="underline" id="sample">Sample Solutions</h3>
+
+    You can checkout the solution branches or look at the <a href="https://github.com/Matthew-Chidlow/cits3003_lab6.git">GitHub Page <br>
+    <div align="right"><small><b><a href="#top">BACK TO TOP</a></b></small></div>
+</div>
