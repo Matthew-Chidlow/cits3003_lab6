@@ -1,4 +1,5 @@
 #include <iostream>
+#include <deque>
 
 // A useful shorthand that not all compilers provide by default
 using uint = unsigned int;
@@ -201,6 +202,8 @@ void draw_cube(glm::mat4 model) {
     glDrawArrays( GL_TRIANGLES, 0, NUM_VERTICES );
 }
 
+std::deque<float> frame_times{};
+
 void draw(GLFWwindow *window, ImGuiManager& imgui_manager) {
     // Tell ImGUI we are starting a new frame
     imgui_manager.new_frame();
@@ -260,6 +263,21 @@ void draw(GLFWwindow *window, ImGuiManager& imgui_manager) {
     imgui_manager.render();
 
     glfwSwapBuffers(window);
+
+    frame_times.push_back(delta);
+    while (frame_times.size() > 100) {
+        frame_times.pop_front();
+    }
+
+    float sum = 0.0f;
+    for (const auto &dt: frame_times) {
+        sum += dt;
+    }
+    float average_dt = sum / (float) frame_times.size();
+    float average_fps = 1.0f / average_dt;
+
+    std::string title = "Lab 6: FPS: " + std::to_string(average_fps);
+    glfwSetWindowTitle(window, title.c_str());
 }
 
 void key_callback(GLFWwindow *window, int key, int /*scancode*/, int /*action*/, int /*mods*/) {
