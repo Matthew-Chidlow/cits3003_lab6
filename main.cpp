@@ -194,17 +194,17 @@ void draw(GLFWwindow *window, ImGuiManager& imgui_manager) {
 
     // Note that the glm matrix constructor takes column vectors,
     // so it visually appears to be the transpose of the actual matrix.
-    auto y_angle = rotation_angles.y;
-    glm::mat3 y_rotation = glm::mat3(
-            {std::cos(y_angle), 0.0, -std::sin(y_angle)},
-            {0.0f, 1.0f, 0.0f},
-            {std::sin(y_angle), 0.0, std::cos(y_angle)}
-    );
     auto x_angle = rotation_angles.x;
     glm::mat3 x_rotation = glm::mat3(
             {1.0f, 0.0f, 0.0f},
             {0.0f, std::cos(x_angle), std::sin(x_angle)},
             {0.0f, -std::sin(x_angle), std::cos(x_angle)}
+    );
+    auto y_angle = rotation_angles.y;
+    glm::mat3 y_rotation = glm::mat3(
+            {std::cos(y_angle), 0.0, -std::sin(y_angle)},
+            {0.0f, 1.0f, 0.0f},
+            {std::sin(y_angle), 0.0, std::cos(y_angle)}
     );
 
     // Scale the x by 0.25
