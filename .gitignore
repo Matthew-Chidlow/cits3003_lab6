@@ -1,0 +1,8 @@
+/cmake*
+/build*
+/.idea
+/.vs
+/.vscode
+cits3003_lab6
+cits3003_lab6.exe
+.DS*
