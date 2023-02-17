@@ -153,11 +153,16 @@ float fov_degrees = 80.0f;
 // Perspective projection
 glm::mat4 projection = glm::perspective(glm::radians(fov_degrees), (float) window_width / (float) window_height, 0.1f, 10.0f);
 
+glm::vec3 camera_pos{0.0f, 0.0f, 1.5f};
 // Move the scene backwards relative to the camera
-glm::mat4 view = glm::translate(glm::vec3{0.0f, 0.0f, -1.5f});
+glm::mat4 view = glm::translate(-camera_pos);
 
 void update_projection() {
     projection = glm::perspective(glm::radians(fov_degrees), (float) window_width / (float) window_height, 0.1f, 10.0f);
+}
+
+void update_view() {
+    view = glm::translate(-camera_pos);
 }
 
 void ui() {
@@ -275,6 +280,20 @@ void framebuffer_size_callback(GLFWwindow* /*window*/, int width, int height) {
     update_projection();
 }
 
+void cursor_pos_callback(GLFWwindow* window, double x_pos, double y_pos) {
+    static glm::vec2 last_pos = glm::vec2{x_pos, y_pos};
+    glm::vec2 pos = glm::vec2{x_pos, y_pos};
+
+    if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && !ImGuiManager::want_capture_mouse()) {
+        auto delta = pos - last_pos;
+        camera_pos.x -= 2.0f * delta.x / (float) window_width;
+        camera_pos.y += 2.0f * delta.y / (float) window_height;
+        update_view();
+    }
+
+    last_pos = pos;
+}
+
 void refresh_callback(GLFWwindow *window) {
     auto* imgui_manager = static_cast<ImGuiManager *>(glfwGetWindowUserPointer(window));
     draw(window, *imgui_manager);
@@ -324,6 +343,7 @@ int main() {
     // We could do the same if we set out callbacks afterwards, but this is less work.
     glfwSetKeyCallback(window, key_callback);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetCursorPosCallback(window, cursor_pos_callback);
 
     ImGuiManager imgui_manager{window};
 
