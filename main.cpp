@@ -158,7 +158,7 @@ void ui() {
         ImGui::DragFloat3("Rotation Speeds", &rotation_speed[0], 0.1f);
 
         // Add a slider to edit the 3 components of the rotation_angle vector, setting the rang to be [0, 2pi]
-        ImGui::SliderFloat3("Rotation Angle", &rotation_angles[0], 0.0f, 2.0f * M_PIf);
+        ImGui::SliderFloat3("Rotation Angle", &rotation_angles[0], 0.0f, 2.0f * (float) M_PI);
 
     }
     // Since ImGUI is an immediate mode UI with hidden internal state, we need to explicitly tell it that
@@ -186,7 +186,7 @@ void draw(GLFWwindow *window, ImGuiManager& imgui_manager) {
 
     if (animate_rotation) {
         rotation_angles += delta * rotation_speed;
-        rotation_angles = glm::mod(rotation_angles, 2.0f * M_PIf);
+        rotation_angles = glm::mod(rotation_angles, 2.0f * (float) M_PI);
     }
 
     // Note that the glm matrix constructor takes column vectors,

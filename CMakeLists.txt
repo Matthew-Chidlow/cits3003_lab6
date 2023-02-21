@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.12)
 project(cits3003_lab6)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -56,8 +56,8 @@ add_custom_command(TARGET cits3003_lab6
 
 if (WIN32)
     # Due to symbolic links requiring higher privileges on Windows, manually create Junctions instead
-    file(TO_NATIVE_PATH "${CMAKE_BINARY_DIR}/config" _dstConfigDir)
-    file(TO_NATIVE_PATH "${CMAKE_SOURCE_DIR}/config" _srcConfigDir)
+    file(TO_NATIVE_PATH "${CMAKE_BINARY_DIR}/res" _dstResDir)
+    file(TO_NATIVE_PATH "${CMAKE_SOURCE_DIR}/res" _srcResDir)
 
     # Link the res dir into where the build puts the exe
     add_custom_command(TARGET cits3003_lab6
