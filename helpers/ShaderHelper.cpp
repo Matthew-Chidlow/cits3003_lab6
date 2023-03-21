@@ -1,5 +1,7 @@
 #include "ShaderHelper.h"
 
+#include <vector>
+
 const std::string ShaderHelper::SHADER_DIR = "res/shaders";
 
 uint ShaderHelper::load_shader(const std::string &vertex_path, const std::string &fragment_path) {
